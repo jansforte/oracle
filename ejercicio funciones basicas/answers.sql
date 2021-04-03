@@ -102,9 +102,13 @@ SELECT department_id ,COUNT(*) AS cant_employee FROM employees
 
 /*Obtenemos el codigo de jefe, id, nombre y nombre del departamento de los 
 empleados que son jefes*/
-SELECT e.manager_id, e.employee_id, e.first_name, d.department_name 
-                        FROM employees e INNER JOIN departments d
-                        ON e.manager_id = d.manager_id;
+SELECT DISTINCT jefe.employee_id, jefe.first_name, d.department_name
+    FROM employees jefe, departments d
+    WHERE jefe.department_id = d.department_id
+    AND  jefe.employee_id IN
+        (SELECT DISTINCT jefes.manager_id
+         FROM employees jefes);
+
 /*Obtenemos los empleados y la diferencia de grado salarial con respecto a su jefe*/
 SELECT DISTINCT employees.employee_id, employees.first_name, jefe_grad,jobs.salary_grade, jefe_grad - jobs.salary_grade FROM employees
 INNER JOIN jobs ON employees.job_id = jobs.job_id
@@ -138,8 +142,11 @@ SELECT DISTINCT e1.employee_id, e1.first_name FROM employees e1
                        e.department_id as jefe_dep,
                        e.salary as jefe_salary,
                        e.manager_id as jefe_man
-                     FROM employees e INNER JOIN departments d
-                     ON e.manager_id = d.manager_id)
+                     FROM employees e, departments d
+				     WHERE jefe.department_id = d.department_id
+				     AND  jefe.employee_id IN
+				        (SELECT DISTINCT jefes.manager_id
+				         FROM employees jefes))
         ON e1.employee_id <> jefe_id
         WHERE e1.department_id = jefe_dep AND e1.salary > jefe_salary AND e1.manager_id <>jefe_man
         ORDER BY e1.employee_id;
@@ -154,18 +161,41 @@ un empleado gana más de 3000*/
 
 
 /*Obtenemos los departamentos todos los empleados ganan mas de 3000*/
- SELECT de.department_id, de.department_name FROM departments de
- INNER JOIN
+SELECT de.department_id, de.department_name FROM departments de
+ WHERE de.department_id IN
     ((SELECT DISTINCT e.department_id as departamento
         FROM employees e WHERE e.department_id IS NOT NULL) 
      MINUS   
     (SELECT DISTINCT e.department_id as departamento
-        FROM employees e WHERE salary<3000))
- ON de.department_id = departamento;
+        FROM employees e WHERE salary<3000));
+
+/*Obtener los codigos y nombres de los departamentos donde todos 
+los empleados ganan más de 3000 y existe almenos un jefe que gana 
+más de 5000
+*/
+SELECT d.department_id, d.department_name
+    FROM employees e, employees m, departments d
+    WHERE e.department_id = d.department_id
+      AND e.manager_id = m.employee_id
+      AND d.department_id IN (SELECT DISTINCT jefe.department_id
+                                FROM employees jefe
+                                WHERE jefe.salary > 5000
+                                  AND jefe.employee_id IN
+                                    (SELECT DISTINCT jefes.manager_id
+                                     FROM employees jefes))
+     AND d.department_id IN 
+                        ((SELECT DISTINCT e.department_id as departamento
+                            FROM employees e WHERE e.department_id IS NOT NULL) 
+                         MINUS   
+                        (SELECT DISTINCT e.department_id as departamento
+                            FROM employees e WHERE salary<3000))
+    GROUP BY d.department_id, d.department_name;
+
 
 /*Obtenemos los empleados que no trabajan en el departamento 80
  pero su salario es mayor que cualquiera de los que trabajan
- en el departamento 80*/
+ en el departamento 80, por ende se entiende como
+ ningun empleado del departamento 80 gana más que ellos*/
  SELECT DISTINCT e1.employee_id, e1.first_name 
     FROM employees e1,
     (SELECT MAX(e2.salary) as salario 

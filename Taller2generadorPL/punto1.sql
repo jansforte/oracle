@@ -1,7 +1,7 @@
 --
 --
 -- AUTHOR: JOHAN SEBASTIAN FUENTES ORTEGA
--- DATE: 16/05/21
+-- DATE: 20/05/21
 --
 -- ----------------------------------------
 CREATE OR REPLACE FUNCTION inDepartments (p_department_id IN departments.department_id%TYPE, 

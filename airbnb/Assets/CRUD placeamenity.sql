@@ -115,13 +115,3 @@ IS
 
 END crud_placeamenity;
 
---Oracle Version 12.2
-SELECT json_object(
-    'order_id' VALUE om.user_data.order_id,
-    'product_code' VALUE om.user_data.Product_code,
-    'customer_id' VALUE om.user_data.Customer_id,
-    'order_details' VALUE om.user_data.order_details,
-    'price' VALUE om.user_data.price, 
-    'region_code' VALUE om.user_data.region_code
-FORMAT JSON) 
-FROM orders_msg_qt om;

@@ -249,6 +249,7 @@ BEGIN
   -- Dequeue for the Europe_Orders subscriber
   -- Transformation Dollar_to_Euro is
   -- automatically applied
+  dequeue_options.navigation := DBMS_AQ.FIRST_MESSAGE;
   dequeue_options.consumer_name :='US_ORDERS'; --decimos que el pedido se realiza en estados unidos
   -- set immediate visibility
   dequeue_options.VISIBILITY    :=  DBMS_AQ.IMMEDIATE; --se ejecute inmediatamente
